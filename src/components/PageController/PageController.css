@@ -1,0 +1,8 @@
+.PageController a, .PageController span{
+  display: inline-block;
+  vertical-align: middle;
+}
+.PageController a.disabled{
+  color: silver;
+  pointer-events: none;
+}
