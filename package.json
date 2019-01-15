@@ -2,6 +2,7 @@
   "name": "u6-interview-project",
   "version": "0.1.0",
   "private": true,
+  "homepage" : "http://everydayimchapolin.com/react-congress",
   "dependencies": {
     "bootstrap": "^4.1.3",
     "classnames": "^2.2.6",

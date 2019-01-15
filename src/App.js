@@ -6,11 +6,17 @@ import Search from './components/Search'
 import Filters from './components/Filters'
 import FilterList from './components/Filters/FilterList'
 import PageController from './components/PageController'
-
+import {fetchMembers} from './http'
 // you should feel free to reorganize the code however you see fit
 // including creating additional folders/files and organizing your
 // components however you would like.
-const members = JSON.parse(localStorage.members) || null
+
+// i just put all the data on a localStorage as a simple cache,
+// it could be improved with a expiration, but i will need to know how much this
+// information should be updated etc just for the sake of this test i will keep it simple ;)
+
+// const members = JSON.parse(localStorage.members || null) || null
+const members = null
 
 class App extends Component {
   constructor() {
@@ -19,26 +25,31 @@ class App extends Component {
       searchTerm: '',
       members,
       filters: {},
-      filteredMembers: [...members],
+      filteredMembers: members ? [...members] : null,
+      visibleMembers: [],
       pageNumber: 1,
       pageSize: 10,
-      pageTotal: null
+      pageTotal: null,
+      loading: true,
     }
   }
   componentWillMount() {
-    const session = 115 // 115th congressional session
-    const chamber = 'senate' // or 'house'
-
-    // sample API call
-    if (!this.state.members) {
-      fetch(`https://api.propublica.org/congress/v1/${session}/${chamber}/members.json`, {
-        headers: new Headers({
-          'X-API-Key': 'd0ywBucVrXRlMQhENZxRtL3O7NPgtou2mwnLARTr',
-        }),
+    if (!localStorage.session || !localStorage.chamber) {
+      localStorage.session = 115
+      localStorage.chamber = 'senate'
+    }
+    const {session, chamber} = localStorage
+    this.setState({
+      session,
+      chamber
+    }, this.loadMembers)
+  }
+  loadMembers = (force = false) => {
+    if (!this.state.members || force) {
+      this.setState({
+        loading: true
       })
-      .then((res) => res.json())
-      .then((json) => json.results[0].members)
-      .then((members) => {
+      fetchMembers(this.state.session, this.state.chamber).then(members => {
         this.setState({
           members,
           filteredMembers: [...members]
@@ -86,7 +97,8 @@ class App extends Component {
     const visibleMembers = finalMembers.slice(number * this.state.pageSize, (number + 1) * this.state.pageSize)
     this.setState({
       visibleMembers,
-      pageTotal: Math.ceil(finalMembers.length / this.state.pageSize)
+      pageTotal: Math.ceil(finalMembers.length / this.state.pageSize),
+      loading: false
     })
   }
   applyFilters = () => {
@@ -115,19 +127,40 @@ class App extends Component {
       }
     }, this.setMembers)
   }
+  handleParams = (e, type) => {
+    const {value} = e.target
+    this.setState({
+      [type]: value
+    }, () => {
+      localStorage.setItem(type, value)
+      this.loadMembers(true)
+    })
+  }
   render() {
     return (
       <div className="App">
+        <Loading show={this.state.loading} />
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">React Programming Exercise</h1>
         </header>
         <section className="container">
           <div className="row">
-            <div className="col-8 col-md-8">
+            <div className="col-md-auto form-group">
+              <Chamber
+                chamber={this.state.chamber}
+                onChange={e => this.handleParams(e, 'chamber')}
+              />
+            </div>
+            <div className="col-md-auto form-group">
+              <Session session={this.state.session} onChange={e => this.handleParams(e, 'session')} />
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-8 col-md-auto">
               <Search onSubmit={this.setFilters}/>
             </div>
-            <div className="col-4 col-md-4 text-right">
+            <div className="col-4 col-md-auto text-right">
               <Filters onSubmit={this.setFilters} />
             </div>
           </div>
@@ -150,6 +183,61 @@ class App extends Component {
       </div>
     )
   }
+}
+
+const Loading = ({show}) => {
+  return (
+    <span>
+    {show && <div className="Loading">
+        <img src={require('./loading.svg')} alt=""/>
+      </div>}
+    </span>
+    )
+}
+
+const Chamber = ({chamber, onChange}) => {
+  return (
+    <div>
+      <label >Chamber:</label> <br/>
+      <div className="form-check form-check-inline">
+        <input
+          className="form-check-input"
+          name="chamber"
+          checked={chamber === 'senate'}
+          type="radio"
+          onChange={onChange}
+          id="inlineradio1"
+          value='senate'
+        />
+        <label className="form-check-label" htmlFor="inlineradio1">Senate</label>
+      </div>
+      <div className="form-check form-check-inline">
+        <input
+          className="form-check-input"
+          name="chamber"
+          checked={chamber === 'house'}
+          type="radio"
+          onChange={onChange}
+          id="inlineradio2"
+          value='house'
+        />
+        <label className="form-check-label" htmlFor="inlineradio2">House</label>
+      </div>
+    </div>
+  )
+}
+
+const Session = ({session, onChange}) => {
+  return (
+    <div className="form-group">
+      <label>Session</label>
+      <input type="number" min="1" max="116"
+        className="form-control"
+        value={session}
+        onChange={onChange}
+      />
+    </div>
+  )
 }
 
 const FilteredMembers = ({members}) => {

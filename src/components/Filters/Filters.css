@@ -2,6 +2,7 @@
 .Filters .dropdown-menu {
     width: 100%;
     box-shadow: 0 4px 7px rgba(0, 0, 0, 0.21);
+    min-width: 200px;
 }
 .Filters form{
   padding-left: 20px;

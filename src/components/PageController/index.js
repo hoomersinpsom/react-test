@@ -3,6 +3,9 @@ import PropTypes from 'prop-types'
 import classnames from 'classnames'
 import './PageController.css'
 
+// the pagination i shoose the simplest style just for the test,
+// but with the props 'actual' and 'total' i could make all kinds
+// of pagination, but i need to speed up the code hahaha
 class PageController extends Component {
   paginate = (e, index) => {
     const {actual, total} = this.props

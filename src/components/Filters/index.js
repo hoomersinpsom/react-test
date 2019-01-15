@@ -3,6 +3,13 @@ import PropTypes from 'prop-types'
 import classnames from 'classnames'
 import './Filters.css'
 
+// This is a general filter everything that is on the member object
+// can be filtered jus by creating a input here i made some basic examples
+// just to see this working, if this was a real project i will need to
+// know which of these informations is important to be filtered 
+// and where i can gather the data to pass to a input, like all states 
+// and districts of USA for example ;)
+
 class Filters extends Component {
   constructor(){
     super()
@@ -38,7 +45,6 @@ class Filters extends Component {
         filters.push({[key]: term})
       }
     }
-    console.log('handleSubmit', filters)
     this.props.onSubmit(filters)
   }
 
