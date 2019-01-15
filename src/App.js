@@ -15,8 +15,8 @@ import {fetchMembers} from './http'
 // it could be improved with a expiration, but i will need to know how much this
 // information should be updated etc just for the sake of this test i will keep it simple ;)
 
-// const members = JSON.parse(localStorage.members || null) || null
-const members = null
+const members = JSON.parse(localStorage.members || null) || null
+// const members = null
 
 class App extends Component {
   constructor() {
